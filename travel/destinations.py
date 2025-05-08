@@ -1,13 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from .models import Destination, Comment
 from .forms import DestinationForm, CommentForm
+from . import db
 
 destbp = Blueprint('destination', __name__, url_prefix = '/destinations')
 
 
 @destbp.route('/<id>')
 def show(id):
-    destination = get_destination()
+    destination = db.session.scalar(db.select(Destination).where(Destination.id==id))
     commentform = CommentForm()
     return render_template('destinations/show.html', destination=destination, form=commentform)
 #defines a route at create
@@ -17,21 +18,31 @@ def show(id):
 @destbp.route('/create', methods = ['GET', 'POST'])
 def create(): #This is run when someone visits /create^
     print('Method type: ', request.method) #debugging
-    form = DestinationForm() #creates and instance - it will passed into the HTML template so that the user can fill it out 
-    if form.validate_on_submit(): #checks if the form has been submitted and if all fields are valid 
+    form = DestinationForm() #creates an instance - it will passed into the HTML template so that the user can fill it out 
+
+    if form.validate_on_submit(): #checks if the form has been submitted and if all fields are valid
+        destination = Destination(name = form.name.data, description = form.description.data, image = form.image.data, currency = form.currency.data)
+        db.session.add(destination)
+        db.session.commit()
         print('Successfully created new travel destination', 'success')
         return redirect(url_for('destination.create'))
     return render_template('destinations/create.html', form = form)
 
 # Handles when a user submits a comment by creating route in destination.py
-destbp.route('/<id>/comment', methods = ['GET', 'POST'])
-def comment(id):
-    commentform = CommentForm()
-    if commentform.validate_on_submit():
-        print(f"The following comment has been poasted: {commentform.text.data}")
-    return redirect(url_for('destination.show', id = id))
+@destbp.route('/<id>/comment', methods=['GET', 'POST'])  
+def comment(id):  
+    form = CommentForm()  
+    # get the destination object associated to the page and the comment
+    destination = db.session.scalar(db.select(Destination).where(Destination.id==id))
+    if form.validate_on_submit():  
+      comment = Comment(text=form.text.data, destination=destination) 
+      db.session.add(comment) 
+      db.session.commit() 
+      print('Your comment has been added', 'success') 
 
-def get_destination():
+    return redirect(url_for('destination.show', id=id))
+
+'''def get_destination():
     # creating a description for of Brazil
 
     b_desc = """ Brazil is considered an advanced emerging economy.
@@ -53,6 +64,6 @@ def get_destination():
     comment = Comment("Sally", "free face masks!", '2023-08-12 11:00:00')
     destination.set_comments(comment)
 
-    return destination
+    return destination'''
 
 

@@ -1,23 +1,48 @@
-class Destination:
+from . import db
+from datetime import datetime
 
-    def __init__(self, name, description, image, currency):
-        self.name = name
-        self.descriptioln = description 
-        self.image = image
-        self.currency = currency
-        self.comments = list()
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(100), index = True, unique = True, nullable=False)
+    emailid = db.Column(db.String(100), index = True )
 
-    def set_comments(self, comment):
-        self.comments.append(comment)
-    
-    def __repre__(self):
-        return f"Name: {self.name}, Currency: {self.currency}"
+    password_Hash = db.Column(db.String(225), nullable = False)
+    comments = db.relationship('Comment', backref = 'user')
 
-class Comment:
-    def __init__(self, user, text, created_at):
+    def __repr__(self):
+        return f"Name: {self.name}"
+
+class Destination(db.Model):
+    __tablename__ = 'destinations'
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(80))
+    description = db.Column(db.String(200))
+    image = db.Column(db.String(400))
+    currency = db.Column(db.String(3))
+    comments = db.relationship('Comment', backref = 'destination')
+
+    def __repr__ (self):
+        return f"Name: {self.name}"
+
+class Comment(db.Model):
+    __tablename__ = "comments"
+    id = db.Column(db.Integer, primary_key = True)
+    text = db.Column(db.String(400))
+    created_at = db.Column(db.DateTime, default = datetime.now())
+
+    # Foreign keys
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    destination_id = db.Column(db.Integer, db.ForeignKey('destinations.id'))
+
+    def __repr__(self):
+        return f"Comment: {self.text}"
+
+
+    '''def __init__(self, user, text, created_at):
         self.user = user
         self.text = text
         self.create_at = created_at
         
     def __repre__(self):
-        return f"User: {self.user},\n Text: {self.text}"
+        return f"User: {self.user},\n Text: {self.text}'''

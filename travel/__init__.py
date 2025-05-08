@@ -1,8 +1,9 @@
 # import flask - from the package import a module
 from flask import Flask
 from flask_bootstrap import Bootstrap5
+from flask_sqlalchemy import SQLAlchemy
 
-
+db = SQLAlchemy()
 
 def create_app():
     print(__name__)  # let us be curious - what is this __name__
@@ -13,6 +14,9 @@ def create_app():
     app.secret_key = 'asecret'
     app.debug = True
 
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///traveldb.sqlite'
+    db.init_app(app)
+    
     # add the Blueprint
     from . import views
     app.register_blueprint(views.mainbp)
@@ -22,4 +26,5 @@ def create_app():
     # add authentication bluprint
     from .import auth
     app.register_blueprint(auth.authbp)
+    
     return app
