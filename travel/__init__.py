@@ -17,6 +17,10 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///traveldb.sqlite'
     db.init_app(app)
     
+    #upload file 
+    UPLOAD_FOLDER = '/static/image/'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
     # add the Blueprint
     from . import views
     app.register_blueprint(views.mainbp)
@@ -26,5 +30,5 @@ def create_app():
     # add authentication bluprint
     from .import auth
     app.register_blueprint(auth.authbp)
-    
+
     return app

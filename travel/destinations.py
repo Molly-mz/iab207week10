@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from .models import Destination, Comment
 from .forms import DestinationForm, CommentForm
 from . import db
+import os 
+from werkzeug.utils import secure_filename
 
 destbp = Blueprint('destination', __name__, url_prefix = '/destinations')
 
@@ -19,14 +21,28 @@ def show(id):
 def create(): #This is run when someone visits /create^
     print('Method type: ', request.method) #debugging
     form = DestinationForm() #creates an instance - it will passed into the HTML template so that the user can fill it out 
-
+    db_file_path = check_upload_file(form)
     if form.validate_on_submit(): #checks if the form has been submitted and if all fields are valid
-        destination = Destination(name = form.name.data, description = form.description.data, image = form.image.data, currency = form.currency.data)
+        destination = Destination(name = form.name.data, description = form.description.data, image = db_file_path, currency = form.currency.data)
         db.session.add(destination)
         db.session.commit()
         print('Successfully created new travel destination', 'success')
         return redirect(url_for('destination.create'))
     return render_template('destinations/create.html', form = form)
+
+def check_upload_file(form):
+    fp = form.image.data 
+    filename = fp.filename
+
+    BASE_PATH = os.path.dirname(__file__)
+
+    upload_path = os.path.join(BASE_PATH, 'static/image', secure_filename(filename))
+
+    db_upload_path = '/static/image/' + secure_filename(filename)
+
+    fp.save(upload_path)
+
+    return db_upload_path
 
 # Handles when a user submits a comment by creating route in destination.py
 @destbp.route('/<id>/comment', methods=['GET', 'POST'])  
