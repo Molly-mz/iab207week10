@@ -1,43 +1,43 @@
-from flask_wtf import FlaskForm # The base class that all forms should inherit from in Flask-WTF
-from wtforms.fields import TextAreaField, SubmitField, StringField, EmailField, PasswordField # Different types of input fields for the form.
-from wtforms.validators import InputRequired, Length, Email, EqualTo # Validator to enforce rules (e.g field must be filled in)
+from flask_wtf import FlaskForm
+from wtforms.fields import TextAreaField, SubmitField, StringField, PasswordField
+from wtforms.validators import InputRequired, Email, EqualTo
 from flask_wtf.file import FileRequired, FileField, FileAllowed
 
 ALLOWED_FILE = {'PNG', 'JPG', 'JPEG', 'png', 'jpg', 'jpeg'}
 
-#Represents a form for creating a new destination. This could be used on a webpage where users
-#can submit info about a country they want to add to a travelguide
-class DestinationForm(FlaskForm): 
-    name = StringField('Country', validators=[InputRequired()])
-    #adding two validators, one to ensure input is entered and other to check if 
-    #the description meets the length requirements 
-    description = TextAreaField('Description', validators=[InputRequired()])
-    image = FileField('Destination Image', validators = [FileRequired(message = 'Image cannot be empty'), FileAllowed(ALLOWED_FILE, message = 'Only supports png, jpg, JPG, PNG')])
-    currency = StringField('Currency', validators=[InputRequired()])
-    submit = SubmitField('Create')
+# Create new destination
+class DestinationForm(FlaskForm):
+  name = StringField('Country', validators=[InputRequired()])
+  description = TextAreaField('Description', 
+            validators=[InputRequired()])
+  image = FileField('Destination Image', validators=[
+    FileRequired(message = 'Image cannot be empty'),
+    FileAllowed(ALLOWED_FILE, message='Only supports png, jpg, JPG, PNG')])
+  currency = StringField('Currency', validators=[InputRequired()])
+  submit = SubmitField("Create")
+    
+# User login
+class LoginForm(FlaskForm):
+    user_name = StringField("User Name", validators=[InputRequired('Enter user name')])
+    password = PasswordField("Password", validators=[InputRequired('Enter user password')])
+    submit = SubmitField("Login")
 
-
-#Login the user 
-class UserLogin(FlaskForm):
-    username = StringField('Username', validators=[InputRequired("Enter username")])
-    password = PasswordField('Password', validators=[InputRequired("Enter your password")])
-    submit = SubmitField('Login')
-
-#Register the user 
-class UserRegister(FlaskForm):
-    username = StringField('Username', validators=[InputRequired()])
-    email = EmailField('Email', validators=[Email("Please enter a valid Email")])
-    password = PasswordField('Password', validators=[InputRequired(), 
-                                                     EqualTo('confirm', message = "Password should match")])
+# User register
+class RegisterForm(FlaskForm):
+    user_name = StringField("User Name", validators=[InputRequired()])
+    email_id = StringField("Email Address", validators=[Email("Please enter a valid email")])
+    
+    # linking two fields - password should be equal to data entered in confirm
+    password = PasswordField("Password", validators=[InputRequired(),
+                  EqualTo('confirm', message="Passwords should match")])
     confirm = PasswordField("Confirm Password")
-
+    # submit button
     submit = SubmitField("Register")
 
-
-#used to collect a comment
+# User comment
 class CommentForm(FlaskForm):
-    text = TextAreaField('Comment', [InputRequired()])
-    submit = SubmitField('Create')
+  text = TextAreaField('Comment', [InputRequired()])
+  submit = SubmitField('Create')
 
 
 #MORE COMPLEX --USE THIS FOR THE ASSIGNMENT
