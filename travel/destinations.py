@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .models import Destination, Comment
 from .forms import DestinationForm, CommentForm
 from . import db
@@ -28,7 +28,6 @@ def create():
     # commit to the database
     db.session.commit()
     print('Successfully created new travel destination', 'success')
-    # Always end with redirect when form is valid
     return redirect(url_for('destination.create'))
   return render_template('destinations/create.html', form=form)
 
@@ -52,7 +51,6 @@ def comment(id):
     # get the destination object associated to the page and the comment
     destination = db.session.scalar(db.select(Destination).where(Destination.id==id))
     if form.validate_on_submit():  
-      # read the comment from the form
       comment = Comment(text=form.text.data, destination=destination) 
       # here the back-referencing works - comment.destination is set
       # and the link is created
@@ -60,8 +58,7 @@ def comment(id):
       db.session.commit() 
 
       # flashing a message which needs to be handled by the html
-      # flash('Your comment has been added', 'success')  
-      print('Your comment has been added', 'success') 
+      flash('Your comment has been added', 'success')  
     # using redirect sends a GET request to destination.show
     return redirect(url_for('destination.show', id=id))
 
