@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from .models import Destination, Comment
 from .forms import DestinationForm, CommentForm
 from . import db
 import os
 from werkzeug.utils import secure_filename
+from flask_login import login_required, current_user
 
 destbp = Blueprint('destination', __name__, url_prefix='/destinations')
 
@@ -11,10 +12,14 @@ destbp = Blueprint('destination', __name__, url_prefix='/destinations')
 def show(id):
     destination = db.session.scalar(db.select(Destination).where(Destination.id==id))
     # create the comment form
-    cform = CommentForm()    
+    cform = CommentForm()  
+
+    if not destination:
+      abort(404)  
     return render_template('destinations/show.html', destination=destination, form=cform)
 
 @destbp.route('/create', methods=['GET', 'POST'])
+@login_required
 def create():
   print('Method type: ', request.method)
   form = DestinationForm()
@@ -22,12 +27,13 @@ def create():
     # call the function that checks and returns image
     db_file_path = check_upload_file(form)
     destination = Destination(name=form.name.data,description=form.description.data, 
-    image = db_file_path,currency=form.currency.data)
+    image=db_file_path,currency=form.currency.data)
     # add the object to the db session
     db.session.add(destination)
     # commit to the database
     db.session.commit()
-    print('Successfully created new travel destination', 'success')
+    flash('Successfully created new travel destination', 'success')
+    # Always end with redirect when form is valid
     return redirect(url_for('destination.create'))
   return render_template('destinations/create.html', form=form)
 
